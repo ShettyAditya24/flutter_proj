@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import '../services/breeder_auth.dart';
 import '../signup/breeder_signup.dart';
 
@@ -14,6 +15,7 @@ class _BreederLoginScreenState extends State<BreederLoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
+  bool _obscurePassword = true;
 
   void _login() async {
     if (_formKey.currentState!.validate()) {
@@ -36,8 +38,6 @@ class _BreederLoginScreenState extends State<BreederLoginScreen> {
             backgroundColor: Colors.green,
           ),
         );
-
-        // Delay before navigating to show message properly
         Future.delayed(const Duration(seconds: 2), () {
           Navigator.pushReplacementNamed(context, "/breederDashboard");
         });
@@ -48,41 +48,69 @@ class _BreederLoginScreenState extends State<BreederLoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Breeder Login")),
+      backgroundColor: Colors.white,
       body: Padding(
         padding: const EdgeInsets.all(20.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text("Login as a Breeder", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 15),
-              TextFormField(
-                controller: _emailController,
-                decoration: const InputDecoration(labelText: "Email"),
-                keyboardType: TextInputType.emailAddress,
-                validator: (value) => value!.isEmpty || !value.contains('@') ? "Enter valid email" : null,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Lottie.asset('assets/images/breeder_login.json', height: 180),
+            const SizedBox(height: 15),
+            const Text(
+              "Login as a Breeder",
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.orange),
+            ),
+            const SizedBox(height: 15),
+            Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  TextFormField(
+                    controller: _emailController,
+                    decoration: const InputDecoration(
+                      labelText: "Email",
+                      prefixIcon: Icon(Icons.email, color: Colors.orange),
+                    ),
+                    keyboardType: TextInputType.emailAddress,
+                    validator: (value) => value!.isEmpty || !value.contains('@') ? "Enter a valid email" : null,
+                  ),
+                  const SizedBox(height: 15),
+                  TextFormField(
+                    controller: _passwordController,
+                    decoration: InputDecoration(
+                      labelText: "Password",
+                      prefixIcon: const Icon(Icons.lock, color: Colors.orange),
+                      suffixIcon: IconButton(
+                        icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: Colors.orange),
+                        onPressed: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
+                        },
+                      ),
+                    ),
+                    obscureText: _obscurePassword,
+                    validator: (value) => value!.length < 6 ? "Password too short" : null,
+                  ),
+                  const SizedBox(height: 20),
+                  _isLoading
+                      ? const CircularProgressIndicator(color: Colors.orange)
+                      : ElevatedButton(
+                    onPressed: _login,
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+                    child: const Text("Login", style: TextStyle(color: Colors.white)),
+                  ),
+                  const SizedBox(height: 10),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const BreederSignupScreen()));
+                    },
+                    child: const Text("Don't have an account? Sign up here", style: TextStyle(color: Colors.orange)),
+                  ),
+                ],
               ),
-              TextFormField(
-                controller: _passwordController,
-                decoration: const InputDecoration(labelText: "Password"),
-                obscureText: true,
-                validator: (value) => value!.length < 6 ? "Password too short" : null,
-              ),
-              const SizedBox(height: 20),
-              _isLoading
-                  ? const CircularProgressIndicator()
-                  : ElevatedButton(onPressed: _login, child: const Text("Login")),
-              const SizedBox(height: 10),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const BreederSignupScreen()));
-                },
-                child: const Text("Don't have an account? Sign up here"),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

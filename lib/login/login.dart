@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:lottie/lottie.dart';
 import 'package:flutter_proj/services/auth_service.dart';
-
 import '../views/home.dart';
-
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -14,9 +12,47 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final formKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  bool isLoading = false;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  void _login() async {
+    if (!formKey.currentState!.validate()) return;
+
+    setState(() => isLoading = true);
+
+    String result = await AuthService().loginWithEmail(
+      _emailController.text.trim(),
+      _passwordController.text.trim(),
+    );
+
+    setState(() => isLoading = false);
+
+    if (result == "Login Successful") {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Login Successful")),
+      );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomePage()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result, style: const TextStyle(color: Colors.white)),
+          backgroundColor: Colors.red.shade400,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,9 +93,11 @@ class _LoginPageState extends State<LoginPage> {
                       children: [
                         TextFormField(
                           controller: _emailController,
-                          validator: (value) => value!.isEmpty ? "Email cannot be empty." : null,
+                          validator: (value) =>
+                          value!.isEmpty ? "Email cannot be empty." : null,
                           decoration: InputDecoration(
-                            prefixIcon: const Icon(Icons.email, color: Colors.orange),
+                            prefixIcon:
+                            const Icon(Icons.email, color: Colors.orange),
                             hintText: "Email",
                             filled: true,
                             fillColor: Colors.white,
@@ -72,10 +110,13 @@ class _LoginPageState extends State<LoginPage> {
                         const SizedBox(height: 10),
                         TextFormField(
                           controller: _passwordController,
-                          validator: (value) => value!.length < 8 ? "Password should have at least 8 characters." : null,
+                          validator: (value) => value!.length < 8
+                              ? "Password should have at least 8 characters."
+                              : null,
                           obscureText: true,
                           decoration: InputDecoration(
-                            prefixIcon: const Icon(Icons.lock, color: Colors.orange),
+                            prefixIcon:
+                            const Icon(Icons.lock, color: Colors.orange),
                             hintText: "Password",
                             filled: true,
                             fillColor: Colors.white,
@@ -93,35 +134,32 @@ class _LoginPageState extends State<LoginPage> {
                     alignment: Alignment.centerRight,
                     child: TextButton(
                       onPressed: () {},
-                      child: const Text("Forgot Password?", style: TextStyle(color: Colors.orange)),
+                      child: const Text("Forgot Password?",
+                          style: TextStyle(color: Colors.orange)),
                     ),
                   ),
                   const SizedBox(height: 10),
                   ElevatedButton(
-                    onPressed: () {
-                      if (formKey.currentState!.validate()) {
-                        AuthService().loginWithEmail(_emailController.text, _passwordController.text).then((value) {
-                          if (value == "Login Successful") {
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Login Successful")));
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => const HomePage()));
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(value, style: const TextStyle(color: Colors.white)), backgroundColor: Colors.red.shade400));
-                          }
-                        });
-                      }
-                    },
+                    onPressed: isLoading ? null : _login,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.orangeAccent,
-                      padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 50, vertical: 15),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
                       ),
                     ),
-                    child: const Text(
+                    child: isLoading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text(
                       "Login",
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                      style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white),
                     ),
-                  ).animate().fadeIn(duration: 800.ms).scale(delay: 300.ms, duration: 600.ms),
+                  ).animate().fadeIn(duration: 800.ms).scale(
+                      delay: 300.ms, duration: 600.ms),
                   const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -131,7 +169,12 @@ class _LoginPageState extends State<LoginPage> {
                         onPressed: () {
                           Navigator.pushNamed(context, "/signup");
                         },
-                        child: const Text("Sign Up", style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
+                        child: const Text(
+                          "Sign Up",
+                          style: TextStyle(
+                              color: Colors.orange,
+                              fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ],
                   ),
