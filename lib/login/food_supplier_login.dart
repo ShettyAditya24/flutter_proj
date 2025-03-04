@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../dashboard/fsdashboard.dart';
 import '../signup/food_supplier_signup.dart';
 
 class FoodSupplierLoginScreen extends StatefulWidget {
@@ -23,13 +24,18 @@ class _FoodSupplierLoginScreenState extends State<FoodSupplierLoginScreen> {
     });
 
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
+      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
 
-      // Navigate to Food Supplier Dashboard (Replace with actual screen)
-      Navigator.pushReplacementNamed(context, "/foodSupplierDashboard");
+      // Navigate to Food Supplier Dashboard with user details
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => FoodSupplierDashboard(user: userCredential.user),
+        ),
+      );
     } on FirebaseAuthException catch (e) {
       _showErrorDialog(e);
     } finally {

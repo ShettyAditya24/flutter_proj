@@ -50,6 +50,9 @@ dependencies:
   page_transition: ^2.1.0
   animate_do: ^4.2.0
   google_fonts: ^4.0.0
+  image_picker: ^1.0.0
+  dio: ^5.0.0  # Use the latest version
+
 
 dev_dependencies:
   flutter_test:

@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_proj/dashboard/breeder_dashboard.dart';
 import 'package:flutter_proj/services/auth_service.dart';
 import 'package:flutter_proj/signup/breeder_signup.dart';
 import 'package:flutter_proj/signup/doctor_signup.dart';
@@ -10,8 +11,10 @@ import 'package:flutter_proj/views/UserSelectionScreen.dart';
 import 'package:flutter_proj/views/WelcomePage.dart';
 import 'package:flutter_proj/views/home.dart';
 import 'package:flutter_proj/signup/signup.dart';
+import 'package:flutter_proj/views/pet_owner_home_screen.dart';
 import 'package:flutter_proj/views/upload_area.dart';
 
+import 'dashboard/fsdashboard.dart';
 import 'firebase_options.dart';
 import 'login/breeder_login.dart';
 import 'login/doctor_login.dart';
@@ -50,8 +53,10 @@ class MyApp extends StatelessWidget {
         "/breederLogin": (context) => BreederLoginScreen(),  // Added
         "/doctorLogin": (context) => DoctorLoginScreen(),  // Added
         "/foodSupplierLogin": (context) => FoodSupplierLoginScreen(),  // Added
+        "/fsdash":(context) =>FoodSupplierDashboard(),
+        "/breeder_dashboard":(context) =>BreederDashboard(),
         "/CH": (context) => CheckUser(),
-        "/home": (context) => HomePage(),
+        "/home": (context) => PetOwnerScreen(),
         "/login": (context) => LoginPage(),  // Assuming this is for users/pet owners
         "/signup": (context) => SignupPage(),
         "/upload": (context) => UploadArea(),

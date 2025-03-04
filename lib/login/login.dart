@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_proj/views/pet_owner_home_screen.dart';
 import 'package:lottie/lottie.dart';
 import 'package:flutter_proj/services/auth_service.dart';
 import '../views/home.dart';
@@ -42,7 +43,7 @@ class _LoginPageState extends State<LoginPage> {
       );
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const HomePage()),
+        MaterialPageRoute(builder: (context) => PetOwnerScreen()),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
