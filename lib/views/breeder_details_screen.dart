@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class BreederDetailsScreen extends StatelessWidget {
   final breeder;
 
-  const BreederDetailsScreen(this.breeder);
+  const BreederDetailsScreen(this.breeder, {super.key});
 
   @override
   Widget build(BuildContext context) {

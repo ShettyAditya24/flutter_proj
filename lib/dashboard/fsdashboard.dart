@@ -18,52 +18,55 @@ class _FoodSupplierDashboardState extends State<FoodSupplierDashboard> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  File? _image;
+  List<File> _images = [];
   final picker = ImagePicker();
-  String _imageUrl = "";
+  List<String> _imageUrls = [];
   bool _isUploading = false;
 
-  Future<void> _pickImage() async {
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
+  Future<void> _pickImages() async {
+    final pickedFiles = await picker.pickMultiImage();
+    if (pickedFiles.isNotEmpty) {
       setState(() {
-        _image = File(pickedFile.path);
+        _images = pickedFiles.map((file) => File(file.path)).toList();
       });
     }
   }
 
-  Future<void> _uploadImageToCloudinary() async {
-    if (_image == null) {
-      _showSnackbar("Please select an image first.", Colors.red);
+  Future<void> _uploadImagesToCloudinary() async {
+    if (_images.isEmpty) {
+      _showSnackbar("Please select images first.", Colors.red);
       return;
     }
 
     setState(() => _isUploading = true);
+    _imageUrls.clear();
 
     String cloudName = dotenv.env['CLOUDINARY_CLOUD_NAME'] ?? '';
     String uploadUrl = "https://api.cloudinary.com/v1_1/$cloudName/raw/upload";
     String uploadPreset = dotenv.env['CLOUDINARY_UPLOAD_PRESET'] ?? '';
 
-    var request = http.MultipartRequest("POST", Uri.parse(uploadUrl));
-    request.fields['upload_preset'] = uploadPreset;
-    request.files.add(await http.MultipartFile.fromPath('file', _image!.path));
+    for (var image in _images) {
+      var request = http.MultipartRequest("POST", Uri.parse(uploadUrl));
+      request.fields['upload_preset'] = uploadPreset;
+      request.files.add(await http.MultipartFile.fromPath('file', image.path));
 
-    var response = await request.send();
+      var response = await request.send();
+      if (response.statusCode == 200) {
+        var jsonResponse = json.decode(await response.stream.bytesToString());
+        _imageUrls.add(jsonResponse['secure_url']);
+      } else {
+        _showSnackbar("Some images failed to upload!", Colors.red);
+      }
+    }
 
-    if (response.statusCode == 200) {
-      var jsonResponse = json.decode(await response.stream.bytesToString());
-      setState(() {
-        _imageUrl = jsonResponse['secure_url'];
-      });
+    if (_imageUrls.isNotEmpty) {
       _addProduct();
-    } else {
-      _showSnackbar("Image upload failed! Try again.", Colors.red);
     }
     setState(() => _isUploading = false);
   }
 
   void _addProduct() async {
-    if (_nameController.text.isEmpty || _priceController.text.isEmpty || _imageUrl.isEmpty) {
+    if (_nameController.text.isEmpty || _priceController.text.isEmpty || _imageUrls.isEmpty) {
       _showSnackbar("All fields are required!", Colors.red);
       return;
     }
@@ -73,15 +76,15 @@ class _FoodSupplierDashboardState extends State<FoodSupplierDashboard> {
       "id": productRef.id,
       "name": _nameController.text.trim(),
       "price": _priceController.text.trim(),
-      "imageUrl": _imageUrl,
+      "imageUrls": _imageUrls,
       "timestamp": FieldValue.serverTimestamp(),
     });
 
     _nameController.clear();
     _priceController.clear();
     setState(() {
-      _image = null;
-      _imageUrl = "";
+      _images = [];
+      _imageUrls = [];
     });
     _showSnackbar("Product added successfully!", Colors.green);
   }
@@ -118,20 +121,32 @@ class _FoodSupplierDashboardState extends State<FoodSupplierDashboard> {
               decoration: InputDecoration(labelText: "Price"),
             ),
             SizedBox(height: 10),
-            _image == null
-                ? Text("No Image Selected")
-                : Image.file(_image!, height: 100),
+            _images.isEmpty
+                ? Text("No Images Selected")
+                : SizedBox(
+              height: 100,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: _images.length,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: Image.file(_images[index], height: 100),
+                  );
+                },
+              ),
+            ),
             ElevatedButton(
-              onPressed: _pickImage,
-              child: Text("Pick Image"),
+              onPressed: _pickImages,
+              child: Text("Pick Images"),
               style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
             ),
             ElevatedButton(
-              onPressed: _isUploading ? null : _uploadImageToCloudinary,
+              onPressed: _isUploading ? null : _uploadImagesToCloudinary,
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
               child: _isUploading
                   ? CircularProgressIndicator(color: Colors.white)
                   : Text("Add Product"),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
             ),
             SizedBox(height: 20),
             Expanded(
@@ -146,13 +161,16 @@ class _FoodSupplierDashboardState extends State<FoodSupplierDashboard> {
                     itemCount: products.length,
                     itemBuilder: (context, index) {
                       var product = products[index];
+                      List<dynamic> imageUrls = product["imageUrls"];
                       return Card(
                         elevation: 3,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: ListTile(
-                          leading: Image.network(product["imageUrl"], height: 50, width: 50, fit: BoxFit.cover),
+                          leading: imageUrls.isNotEmpty
+                              ? Image.network(imageUrls[0], height: 50, width: 50, fit: BoxFit.cover)
+                              : Icon(Icons.image, size: 50),
                           title: Text(product["name"]),
                           subtitle: Text("₹${product["price"]}"),
                           trailing: IconButton(

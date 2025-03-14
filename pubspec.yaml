@@ -52,6 +52,8 @@ dependencies:
   google_fonts: ^4.0.0
   image_picker: ^1.0.0
   dio: ^5.0.0  # Use the latest version
+  intl: ^0.18.0
+  shared_preferences: ^2.5.2
 
 
 dev_dependencies:

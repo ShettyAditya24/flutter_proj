@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lottie/lottie.dart'; // For Lottie animation
 import '../signup/doctor_signup.dart';
+import '../dashboard/doctor_dashboard.dart'; // Import Doctor Dashboard
 
 class DoctorLoginScreen extends StatefulWidget {
   const DoctorLoginScreen({super.key});
@@ -25,8 +26,15 @@ class _DoctorLoginScreenState extends State<DoctorLoginScreen> {
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Login Successful!")),
+        );
+
+        // Navigate to Doctor Dashboard
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => DoctorDashboard()),
         );
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -42,14 +50,6 @@ class _DoctorLoginScreenState extends State<DoctorLoginScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          Container(
-            // decoration: const BoxDecoration(
-            //   image: DecorationImage(
-            //     image: AssetImage("assets/background.jpg"), // Add your image
-            //     fit: BoxFit.cover,
-            //   ),
-            // ),
-          ),
           Center(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(20.0),

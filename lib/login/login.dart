@@ -3,7 +3,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_proj/views/pet_owner_home_screen.dart';
 import 'package:lottie/lottie.dart';
 import 'package:flutter_proj/services/auth_service.dart';
-import '../views/home.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
