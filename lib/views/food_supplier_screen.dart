@@ -3,6 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class FoodSupplierListScreen extends StatelessWidget {
+  const FoodSupplierListScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     if (FirebaseAuth.instance.currentUser == null) {
@@ -183,9 +185,10 @@ class FoodProductDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    List<dynamic> imageUrls = product["imageUrls"] ?? [];
     return Scaffold(
       appBar: AppBar(
-        title: Text( "Product Details"),
+        title: Text(product["name"] ?? "Product Details"),
         backgroundColor: Colors.orange,
         centerTitle: true,
       ),
@@ -194,25 +197,114 @@ class FoodProductDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            product["imageUrls"] != null && product["imageUrls"].isNotEmpty
-                ? Image.network(product["imageUrls"][0], height: 200, fit: BoxFit.cover)
-                : const Icon(Icons.fastfood, size: 100, color: Colors.orange),
+            imageUrls.isNotEmpty
+                ? ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.network(
+                imageUrls[0],
+                height: 200,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  height: 200,
+                  color: Colors.grey[300],
+                  child: const Icon(
+                    Icons.fastfood,
+                    size: 100,
+                    color: Colors.orange,
+                  ),
+                ),
+              ),
+            )
+                : Container(
+              height: 200,
+              color: Colors.grey[300],
+              child: const Icon(
+                Icons.fastfood,
+                size: 100,
+                color: Colors.orange,
+              ),
+            ),
             const SizedBox(height: 16),
-
             Text(
               product["name"] ?? "Unknown Product",
               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black),
             ),
-
             const SizedBox(height: 8),
-
-
-            Text("Price: ₹${product["price"] ?? 'N/A'}", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(
+              "Price: ₹${product["price"] ?? 'N/A'}",
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
-            Text(product["description"] ?? "No description available", style: const TextStyle(fontSize: 16)),
+            Text(
+              product["description"] ?? "No description available",
+              style: const TextStyle(fontSize: 16),
+            ),
+            const Spacer(),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => _buyProduct(context, product),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text("Buy Now", style: TextStyle(fontSize: 18)),
+              ),
+            ),
           ],
         ),
       ),
     );
+  }
+
+  void _buyProduct(BuildContext context, Map<String, dynamic> product) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      // User is not logged in.  Redirect to login or show an error.
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please log in to make a purchase.')));
+      return; // Stop the purchase process
+    }
+
+    //Get Supplier name
+    // Assuming the food supplier's name is stored within the product data.
+    String supplierName = product['supplierName'] ?? 'Unknown Supplier';
+
+
+    try {
+      await FirebaseFirestore.instance.collection('orders').add({
+        'productName': product['name'] ?? 'Unknown Product',
+        'price': product['price'] ?? 'N/A',
+        'storeName': supplierName,
+        'userId': user.uid,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text("Success"),
+            content: Text("Successfully purchased ${product["name"] ?? 'this product'}!"),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context); // Close dialog
+                  Navigator.pop(context); // Return to product list
+                },
+                child: const Text("OK", style: TextStyle(color: Colors.orange)),
+              ),
+            ],
+          );
+        },
+      );
+    } catch (e) {
+      print("Error adding order: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to place order: $e')));
+    }
   }
 }

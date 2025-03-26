@@ -54,6 +54,8 @@ dependencies:
   dio: ^5.0.0  # Use the latest version
   intl: ^0.18.0
   shared_preferences: ^2.5.2
+  url_launcher: ^6.3.1
+  flutter_launcher_icons: ^0.14.3
 
 
 dev_dependencies:
@@ -66,9 +68,13 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/app_icon.png"  # Set your icon path
+  adaptive_icon_background: "#FFFFFF"  # Background color for Android adaptive icon (optional)
+  adaptive_icon_foreground: "assets/app_icon.png"
 
-# For information on the generic Dart part of this file, see the
-# following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter packages.
 flutter:
@@ -83,12 +89,7 @@ flutter:
     - .env
     - assets/images/
 #    - .env
-#    - assets/images
-#    - assets/pet_background.jpg
-#    - assets/pet_logo.png
-#    - assets/pet_animation.json
-#    - assets/sam.png
-#    - assets/name.jpg
+
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

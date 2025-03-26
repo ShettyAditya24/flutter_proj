@@ -62,7 +62,7 @@ class MyApp extends StatelessWidget {
         "/doctor_screen": (context) => DoctorListScreen(),
         "/food_supplier_list": (context) => FoodSupplierListScreen(),
         "/owner_profile":(context)=>ProfileScreen(),// List of food suppliers
-        "/home": (context) => PetOwnerScreen(),
+        "/home": (context) => HomeScreen(),
         "/login": (context) => LoginPage(),
         "/signup": (context) => SignupPage(),
         "/upload": (context) => UploadArea(),
